@@ -6,10 +6,12 @@ struct fruit {
 	
 	void genFruit(int xx, int yy) {
 		std::srand(std::time(NULL));
-		Fx = std::rand();
-		Fy = std::rand();
-		Fx = (Fx % (xx-3))+3;
-		Fy = (Fy % (yy-3))+3;
+		do {
+			Fx = std::rand();
+			Fy = std::rand();
+			Fx = (Fx % (xx-3));
+			Fy = (Fy % (yy-3));
+		} while (Fy < 2 || Fx < 2);
 	}
 
 	bool HannIde(int xx,int yy) {
@@ -163,7 +165,13 @@ public:
 	{
 		// Called once at the start, so create things here
 		s1.setPositionInit(ScreenWidth() / 2, ScreenHeight() / 2);
-		h1.genFruit(ScreenWidth(), ScreenHeight());
+		
+		//Gen init fruit
+		bool HannInBala = false;
+		do {
+			h1.genFruit(ScreenWidth(), ScreenHeight());
+			HannInBala = s1.BalaIde(h1.Fx, h1.Fy);
+		} while (HannInBala);
 		return true;
 	}
 
@@ -171,28 +179,42 @@ public:
 	{
 		// called once per frame, draws random coloured pixels
 		this->f1 += fElapsedTime;
-		
+
 		//Generate Fruit Logic
 		bool HannInBala = false;
 		if (s1.getPosX() == h1.getHannX() && s1.getPosY() == h1.getHannY()) {
 			s1.incrementBala();
 			do {
 				h1.genFruit(ScreenWidth(), ScreenHeight());
-				HannInBala = s1.BalaIde(h1.Fx, h1.Fy) || (h1.Fx == 0) || (h1.Fx == 1)
-					|| (h1.Fx == ScreenWidth()-1) || (h1.Fx == ScreenWidth()-2)
-					|| (h1.Fy == 0) || (h1.Fy == 1) || (h1.Fy == ScreenHeight() -1)
-					|| (h1.Fy == ScreenHeight() -2);
+				HannInBala = s1.BalaIde(h1.Fx, h1.Fy);
 			} while (HannInBala);
 		}
 
 		//Get Key Strokes
-		if (GetKey(olc::Key::LEFT).bPressed && s1.currentDirection != s1.East())s1.currentDirection = s1.West();
-		else if (GetKey(olc::Key::RIGHT).bPressed && s1.currentDirection != s1.West()) s1.currentDirection = s1.East();
-		else if (GetKey(olc::Key::UP).bPressed && s1.currentDirection != s1.North()) s1.currentDirection = s1.South();
-		else if (GetKey(olc::Key::DOWN).bPressed && s1.currentDirection != s1.South()) s1.currentDirection = s1.North();
+		bool keyupframe = false;
+		if (GetKey(olc::Key::LEFT).bPressed && s1.currentDirection != s1.East())
+		{
+			s1.currentDirection = s1.West();
+			keyupframe = true;
+		}
+		else if (GetKey(olc::Key::RIGHT).bPressed && s1.currentDirection != s1.West())
+		{ 
+			s1.currentDirection = s1.East();
+			keyupframe = true;
+		}
+		else if (GetKey(olc::Key::UP).bPressed && s1.currentDirection != s1.North())
+		{ 
+			s1.currentDirection = s1.South();
+			keyupframe = true;
+		}
+		else if (GetKey(olc::Key::DOWN).bPressed && s1.currentDirection != s1.South()) 
+		{ 
+			s1.currentDirection = s1.North();
+			keyupframe = true;
+		}
 		
 		//Speed 1ms = 0.1f
-		if (f1 > 0.1f) {
+		if (f1 > 0.1f || keyupframe) {
 			f1 = 0;
 
 			if (s1.currentDirection == s1.West())
